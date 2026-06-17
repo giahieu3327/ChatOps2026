@@ -1,0 +1,13 @@
+[Unit]
+Description=ChatOps Backend (.NET)
+After=network.target
+
+[Service]
+WorkingDirectory=/home/ubuntu/ChatOps/backend
+ExecStart=/usr/bin/dotnet run --urls "http://0.0.0.0:5000"
+Restart=always
+User=ubuntu
+Environment=ASPNETCORE_ENVIRONMENT=Production
+
+[Install]
+WantedBy=multi-user.target

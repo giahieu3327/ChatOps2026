@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatOps Dashboard - Container Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thư viện SignalR Client chính thức từ Microsoft -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-green-400 font-mono min-h-screen flex flex-col p-4 md:p-8">
+
+    <!-- LOGIN OVERLAY -->
+    <div id="login-overlay" class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-gray-900 border border-green-500 p-8 rounded-lg shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6 text-center tracking-widest uppercase">ChatOps Login</h2>
+            <div class="space-y-4">
+                <input id="user" type="text" placeholder="Username" class="w-full bg-black border border-gray-700 p-3 rounded text-white focus:border-green-500">
+                <input id="pass" type="password" placeholder="Password" class="w-full bg-black border border-gray-700 p-3 rounded text-white focus:border-green-500">
+                <button onclick="login()" class="w-full bg-green-600 hover:bg-green-500 text-black font-bold py-3 rounded transition-all">ACCESS SYSTEM</button>
+                <p id="login-err" class="text-red-500 text-sm text-center hidden">Sai thông tin đăng nhập!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TERMINAL SCREEN -->
+    <div class="max-w-5xl mx-auto w-full flex flex-col flex-grow bg-black border border-gray-800 rounded-lg overflow-hidden terminal-shadow">
+
+        <!-- HEADER BAR -->
+        <div class="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-700">
+            <div class="flex space-x-2">
+                <div class="w-3 h-3 bg-red-500 rounded-full shadow-inner"></div>
+                <div class="w-3 h-3 bg-yellow-500 rounded-full shadow-inner"></div>
+                <div class="w-3 h-3 bg-green-500 rounded-full shadow-inner"></div>
+            </div>
+            <div class="text-xs text-gray-400 uppercase tracking-widest font-bold">ChatOps System - v1.0</div>
+            <div class="text-xs text-gray-500 font-semibold">ID: 23520471</div>
+        </div>
+
+        <!-- CHAT SCREEN BOX -->
+        <div id="chat" class="flex-grow p-6 overflow-y-auto space-y-4 text-sm md:text-base h-[550px]">
+            <div class="text-gray-500 italic border-b border-gray-800 pb-2 mb-4">
+                --- Hệ thống khởi tạo thành công. Nhập /help để tra cứu lệnh ---
+            </div>
+        </div>
+
+        <!-- COMMAND LINE INPUT -->
+        <div class="p-4 bg-gray-800 flex items-center space-x-3 border-t border-gray-700">
+            <span class="text-blue-500 font-bold font-mono text-lg">❯</span>
+            <input id="cmd"
+                   type="text"
+                   class="flex-grow bg-transparent border-none text-white focus:ring-0 placeholder-gray-600"
+                   placeholder="Nhập lệnh điều khiển container..."
+                   onkeydown="if(event.key==='Enter') send()"
+                   autocomplete="off">
+            <button onclick="send()"
+                    class="bg-green-600 hover:bg-green-500 text-black px-6 py-1 rounded font-bold transition-all active:scale-95 uppercase text-sm">
+                Gửi lệnh
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

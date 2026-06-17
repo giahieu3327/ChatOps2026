@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Editor - Container</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <link rel="stylesheet" href="editor.css">
+</head>
+<body class="bg-gray-950 text-gray-200 font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto flex flex-col h-[90vh] bg-[#282a36] rounded-lg overflow-hidden terminal-shadow border border-gray-800">
+
+        <div class="bg-gray-800 px-6 py-3 flex items-center justify-between border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="flex space-x-2 mr-4">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+                <h1 class="text-sm font-bold tracking-wider text-gray-400 uppercase flex items-center">
+                    <i data-lucide="file-code" class="w-4 h-4 mr-2 text-blue-400"></i>
+                    Editor: <span id="display-id" class="ml-2 text-green-400">Loading...</span>
+                </h1>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <span id="status" class="text-xs text-gray-500 italic mr-2">Ready</span>
+                <button onclick="save()" class="flex items-center bg-green-600 hover:bg-green-500 text-black px-5 py-1.5 rounded font-bold transition-all active:scale-95 shadow-lg">
+                    <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                    LƯU THAY ĐỔI
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-grow relative overflow-hidden">
+            <textarea id="t"></textarea>
+        </div>
+
+        <div class="bg-gray-900 px-4 py-2 text-[10px] text-gray-500 flex justify-between border-t border-gray-800">
+            <span>UIT ChatOps Project | HTML/Nginx Mode</span>
+            <span>UTF-8</span>
+        </div>
+    </div>
+
+    <script src="editor.js"></script>
+</body>
+</html>

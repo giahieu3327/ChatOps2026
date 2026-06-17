@@ -1,0 +1,26 @@
+services:
+  lb:
+    build:
+      context: ./lb
+      dockerfile: Dockerfile
+    image: ${IMG_LB}
+    restart: always
+    deploy:
+      replicas: 1
+    ports:
+      - "${START_PORT}-${END_PORT}:80"
+    volumes:
+      - ./lb/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./logs:/runtime:rw
+    networks:
+      - app-net
+    labels:
+      owner: "${OWNER}"
+      domain: "${DOMAIN}"
+      service: "${SERVICE}"
+      type: "lb"
+
+networks:
+  app-net:
+    name: ${COMPOSE_PROJECT_NAME}_app-net
+    external: true
