@@ -1,5 +1,11 @@
 using ChatOps.Data;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using AppContext = ChatOps.Data.AppContext;
 using ChatOps.Models;
 using Microsoft.EntityFrameworkCore;
@@ -157,9 +163,11 @@ namespace ChatOps.Services.ChatService
                                 .Select(p => p!.Value)
                                 .ToList();
 
-            string basePath = "/home/ubuntu/ChatOps/services/Trial";
+            // ĐỘNG HÓA ĐƯỜNG DẪN THƯ MỤC GIT SOURCE
+            string userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string basePath = Path.Combine(userHome, "ChatOps", "services", "Trial");
             string repoName = repoUrl.Split('/').Last().Replace(".git", "").ToLower();
-            string projectPath = $"{basePath}/{repoName}";
+            string projectPath = Path.Combine(basePath, repoName);
             string app = repoName + "_trial";
 
             if (!Regex.IsMatch(app, "^[a-zA-Z0-9_]+$"))
@@ -292,17 +300,19 @@ namespace ChatOps.Services.ChatService
                 containername += container.Name + "\n";
             }
 
+            string displayRuntimePath = Path.Combine(userHome, "ChatOps", "docker", "runtime", app).Replace('\\', '/');
+
             return $"✅ DEPLOY GIT CLUSTER SUCCESS\n\n" +
                 $"📦 Repo: {repoUrl}\n" +
                 $"📦 App: {app}\n" +
                 $"👤 Owner: {owner}\n" +
                 $"🌐 Domain: {fullDomain}\n" +
                 $"🔌 Public Port (LB): {string.Join(",", PortsList)}\n" +
-                $"📂 Runtime Active Path: `/home/ubuntu/ChatOps/docker/runtime/{app}`\n\n" +
+                $"📂 Runtime Active Path: `{displayRuntimePath}`\n\n" +
                 $"📋 Trạng thái thực thi Container:\n{containername}\n" +
                 $"🌐 Mạng cách ly nội bộ: {app}_app-net\n\n" +
                 $"⚙️ Chi tiết logs deploy:\n{clusterDeployResult}\n\n" +
-                $" Redis Sync Gateway Status: {nginxStatus}";
+                $"🌐 Redis Sync Gateway Status: {nginxStatus}";
         }
 
         public static async Task<string> DeployCompose(Dictionary<string, string> parsed, UserSession session, AppDbContext _db, string connectionId)
@@ -330,8 +340,10 @@ namespace ChatOps.Services.ChatService
                                 .Select(p => p!.Value)
                                 .ToList();
 
-            string basePath = "/home/ubuntu/ChatOps/services/Final";
-            string projectPath = $"{basePath}/{service}";
+            // ĐỘNG HÓA ĐƯỜNG DẪN THƯ MỤC PRODUCTION COMPOSE
+            string userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string basePath = Path.Combine(userHome, "ChatOps", "services", "Final");
+            string projectPath = Path.Combine(basePath, service);
             string app = service;
 
             if (!string.IsNullOrWhiteSpace(extraUser))
@@ -473,13 +485,15 @@ namespace ChatOps.Services.ChatService
                 }
             }
 
+            string displayRuntimePath = Path.Combine(userHome, "ChatOps", "docker", "runtime", app).Replace('\\', '/');
+
             return $"✅ DEPLOY COMPOSE PRODUCTION SUCCESS\n\n" +
                 $"📦 Service: {service}\n" +
                 $"🏷️ Tag Version Active: `{newestTag}`\n" +
                 $"👤 Owner: {owner}\n" +
                 $"🌐 Domain: {fullDomain}\n" +
                 $"🔌 Public Port (LB): {string.Join(",", PortsList)}\n" +
-                $"📂 Runtime Active Path: `/home/ubuntu/ChatOps/docker/runtime/{app}`\n\n" +
+                $"📂 Runtime Active Path: `{displayRuntimePath}`\n\n" +
                 $"⚙️ Chi tiết logs deploy:\n{clusterDeployResult}\n\n" +
                 $"🌐 Redis Sync Gateway Status: {nginxStatus}";
         }
