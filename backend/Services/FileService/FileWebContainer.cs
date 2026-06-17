@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using ChatOps.Data;
 using ChatOps.Models;
 using ChatOps.Services.SystemService;
@@ -51,8 +54,10 @@ namespace ChatOps.Services.FileService
 
         public static async Task<string> SetHTML(string name, string content)
         {
-            // SỬA: Tạo một thư mục tạm riêng biệt, tên file phải cụ thể là index.html hoặc temp_index.html
-            string tempDir = "/home/ubuntu/ChatOps/tmp";
+            // TỰ ĐỘNG LẤY ĐƯỜNG DẪN THƯ MỤC HOME CỦA USER HỆ THỐNG ĐANG THỰC THI TIẾN TRÌNH
+            string userHomePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string tempDir = Path.Combine(userHomePath, "ChatOps", "tmp");
+            
             if (!Directory.Exists(tempDir))
                 Directory.CreateDirectory(tempDir);
 
