@@ -1,4 +1,9 @@
+using System;
+using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 using StackExchange.Redis;
 using ChatOps.Data;
 using AppContext = ChatOps.Data.AppContext;
@@ -301,7 +306,6 @@ namespace ChatOps.Services.RedisService
                         string servicetype = redisData.TryGetProperty("ServiceType", out var t) ? t.GetString() ?? string.Empty : string.Empty;
                         bool isreleased = redisData.TryGetProperty("IsReleased", out var r) && r.GetBoolean();
 
-                        // Kiểm tra xem Local đã có thông tin App này chưa hoặc có sự thay đổi thông số nào không
                         bool isExistLocal = localServices.TryGetValue(redisKey, out var localData);
                         bool isChanged = !isExistLocal || localData.Url != url || localData.ServiceType != servicetype || localData.IsReleased != isreleased;
 
@@ -309,14 +313,16 @@ namespace ChatOps.Services.RedisService
                         {
                             Console.WriteLine($"📥 [App Monitor] Phát hiện thay đổi cấu hình từ Redis cho '{redisKey}'. Đang nạp vào Local...");
 
-                            // Cập nhật ngược vào vùng nhớ tĩnh Local Memory
                             AppCategories.AppServices[redisKey] = (url, servicetype, isreleased);
 
-                            string basePath = "/home/ubuntu/ChatOps/services";
+                            // TỰ ĐỘNG LẤY ĐƯỜNG DẪN THƯ MỤC HOME CỦA USER ĐANG CHẠY TIẾN TRÌNH
+                            string userHomePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                            string basePath = Path.Combine(userHomePath, "ChatOps", "services");
+                            
                             string trialPath = Path.Combine(basePath, "Trial", redisKey);
                             string finalPath = Path.Combine(basePath, "Final", redisKey);
 
-                            // BƯỚC THỬ NGHIỆM (TRIAL): Luôn cần pull mã nguồn từ Git về nếu chưa tồn tại
+                            // BƯỚC THỬ NGHIỆM (TRIAL)
                             if (!Directory.Exists(trialPath) && !string.IsNullOrWhiteSpace(url))
                             {
                                 Console.WriteLine($"📁 [App Monitor] Đang thiết lập không gian kiểm thử (Trial) tại: {trialPath}");
@@ -324,7 +330,7 @@ namespace ChatOps.Services.RedisService
                                 if (cloneResult.Contains("fatal", StringComparison.OrdinalIgnoreCase))
                                 {
                                     Console.WriteLine($"❌ Clone mã nguồn cho '{redisKey}' thất bại:\n{cloneResult}");
-                                    continue; // Bỏ qua bước tiếp theo nếu không clone được code
+                                    continue;
                                 }
                             }
 
@@ -358,7 +364,6 @@ namespace ChatOps.Services.RedisService
                             }
                             else
                             {
-                                // Nếu IsReleased trên Redis chuyển từ true sang false, tiến hành dọn dẹp thư mục Production cục bộ
                                 if (Directory.Exists(finalPath))
                                 {
                                     try
@@ -381,7 +386,6 @@ namespace ChatOps.Services.RedisService
                     }
                 }
 
-                // Đồng bộ lại số lượng đếm thực tế của phân vùng Hash sau chu kỳ quét dựa trên thông tin trên Redis
                 long currentRealCount = await db.HashLengthAsync(hashKey);
                 if (await db.HashExistsAsync(hashKey, "init:placeholder")) currentRealCount--;
                 await UpdateAppCountValueAsync(exactCount: currentRealCount);
