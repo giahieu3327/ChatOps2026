@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ChatOps.Models;
 using ChatOps.Data;
 using ChatOps.Services.RedisService;
@@ -21,6 +21,9 @@ namespace ChatOps.Services.StartupService
             Console.WriteLine("🚀 Chạy chuỗi tác vụ khởi tạo hệ thống (Startup Jobs)...");
             try
             {
+                // Gọi tác vụ kiểm tra cấu trúc thư mục trước tiên
+                EnsureRequiredDirectoriesExist();
+
                 await InitializeDatabaseAsync();
                 await SeedDefaultAdminAsync();
                 await SeedDefaultImageServicesAsync();
@@ -31,6 +34,40 @@ namespace ChatOps.Services.StartupService
             {
                 Console.WriteLine($"❌ Lỗi nghiêm trọng khi khởi động ứng dụng: {ex.Message}");
                 throw;
+            }
+        }
+
+        public void EnsureRequiredDirectoriesExist()
+        {
+            Console.WriteLine("📂 Kiểm tra cấu trúc hệ thống thư mục lưu trữ...");
+            try
+            {
+                string userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                
+                // Danh sách cấu hình các thư mục cần thiết
+                string[] requiredPaths = new string[]
+                {
+                    Path.Combine(userHome, "ChatOps", "services", "Trial"),
+                    Path.Combine(userHome, "ChatOps", "services", "Final"),
+                    Path.Combine(userHome, "ChatOps", "docker", "Apps"),
+                    Path.Combine(userHome, "ChatOps", "docker", "Containers"),
+                    Path.Combine(userHome, "ChatOps", "tmp")
+                };
+
+                foreach (string path in requiredPaths)
+                {
+                    if (!Directory.Exists(path))
+                    {
+                        Console.WriteLine($"➕ Thư mục chưa tồn tại, đang tiến hành tạo mới: {path}");
+                        Directory.CreateDirectory(path);
+                    }
+                }
+                Console.WriteLine("✅ Toàn bộ hệ thống thư mục bắt buộc đã sẵn sàng.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ [Startup Directory Error] Gặp sự cố khi khởi tạo cấu trúc thư mục: {ex.Message}");
+                throw; // Ném exception để dừng hệ thống nếu thiếu thư mục vận hành core
             }
         }
 
@@ -66,15 +103,14 @@ namespace ChatOps.Services.StartupService
             await db.SaveChangesAsync();
             Console.WriteLine("✔ Đã nạp tài khoản admin mặc định thành công (admin/admin123).");
         }
+
         public static async Task SeedDefaultImageServicesAsync()
         {
             Console.WriteLine("🌐 Kiểm tra và đồng bộ cấu hình Image mặc định lên Redis...");
             try
             {
-                // 1. Lấy toàn bộ dữ liệu hiện tại đang có trên Redis Hash
                 (bool getSuccess, Dictionary<string, string> redisMap) = await RedisImageService.GetImageAsync(imageName: null, isGetAll: true);
                 
-                // Nếu Redis chưa khởi tạo cấu trúc dữ liệu chính, tiến hành tạo mới
                 if (!getSuccess || redisMap == null)
                 {
                     await RedisImageService.InsertImageAsync();
@@ -87,7 +123,6 @@ namespace ChatOps.Services.StartupService
                 var localServices = ImageCategories.ImageServices;
                 bool isAnyUpdated = false;
 
-                // 2. Duyệt qua từng Image gốc ở Local để so khớp cấu hình
                 foreach (var local in localServices)
                 {
                     string localJson = JsonSerializer.Serialize(new
@@ -101,7 +136,6 @@ namespace ChatOps.Services.StartupService
                         local.Value.Path
                     });
 
-                    // Trường hợp 1: Redis chưa có Image dịch vụ này
                     if (!redisMap.ContainsKey(local.Key))
                     {
                         Console.WriteLine($"➕ [Startup Seed] Thiếu cấu hình '{local.Key}' trên Redis. Đang thêm mới...");
@@ -112,7 +146,6 @@ namespace ChatOps.Services.StartupService
                             isAnyUpdated = true;
                         }
                     }
-                    // Trường hợp 2: Đã có trên Redis nhưng chuỗi thông số JSON bị sai lệch so với Local gốc
                     else if (redisMap[local.Key] != localJson)
                     {
                         Console.WriteLine($"⚠️ [Startup Seed] Phát hiện sai lệch thông số của '{local.Key}' trên Redis. Tiến hành cập nhật lại...");
@@ -135,6 +168,7 @@ namespace ChatOps.Services.StartupService
                 Console.WriteLine($"⚠️ [Startup Seed Error] Không thể hoàn thành tác vụ đồng bộ Image lên Redis: {ex.Message}");
             }
         }
+
         public static async Task SeedDefaultAppServicesAsync()
         {
             Console.WriteLine("🌐 Bắt đầu kiểm tra và cập nhật trạng thái IsReleased cho AppServices trên Redis...");
@@ -143,7 +177,6 @@ namespace ChatOps.Services.StartupService
                 var db = AppContext.RedisDB;
                 string hashKey = RedisAppService.GetRedisKey();
 
-                // Nếu Key trên Redis chưa từng được tạo, khởi tạo cấu trúc trống và kết thúc sớm
                 if (!await db.KeyExistsAsync(hashKey))
                 {
                     Console.WriteLine("✔ Không tìm thấy HashKey của App trên Redis. Khởi tạo cấu trúc mặc định...");
@@ -152,7 +185,6 @@ namespace ChatOps.Services.StartupService
                     return;
                 }
 
-                // 1. Đọc toàn bộ danh sách App đang lưu trực tiếp trên Redis
                 var redisEntries = await db.HashGetAllAsync(hashKey);
                 var redisMap = redisEntries
                     .ToDictionary(e => e.Name.ToString(), e => e.Value.ToString(), StringComparer.OrdinalIgnoreCase);
@@ -167,7 +199,6 @@ namespace ChatOps.Services.StartupService
 
                 bool isAnyUpdated = false;
 
-                // 2. Duyệt qua từng App lấy từ Redis ra để validate trạng thái với DockerHub
                 foreach (var item in redisMap)
                 {
                     string redisKey = item.Key;
@@ -183,25 +214,20 @@ namespace ChatOps.Services.StartupService
 
                         bool calculatedIsReleased = currentIsReleased;
 
-                        // Tách ServiceType để check sự tồn tại của Image trên Docker Hub
                         if (!string.IsNullOrEmpty(serviceType))
                         {
                             string[] serviceTypes = serviceType.Split(',', StringSplitOptions.RemoveEmptyEntries);
                             if (serviceTypes.Length > 0)
                             {
                                 List<string> tags = await DockerHubService.DockerHubService.GetImageAsync(redisKey, serviceTypes[0]);
-
-                                // Nếu Docker Hub có tag -> IsReleased phải là true, ngược lại false
                                 calculatedIsReleased = tags != null && tags.Count != 0;
                             }
                         }
 
-                        // Nếu phát hiện trạng thái IsReleased thực tế lệch pha so với trạng thái cũ đang lưu trên Redis
                         if (currentIsReleased != calculatedIsReleased)
                         {
                             Console.WriteLine($"⚠️ [Fix App Released] Phát hiện sai lệch cho '{redisKey}'. Redis đang là: {currentIsReleased} | Thực tế DockerHub: {calculatedIsReleased}. Tiến hành đồng bộ lại...");
 
-                            // Khởi tạo lại chuỗi JSON chuẩn với IsReleased đã được đính chính
                             string correctedJson = JsonSerializer.Serialize(new
                             {
                                 Url = url,
@@ -209,7 +235,6 @@ namespace ChatOps.Services.StartupService
                                 IsReleased = calculatedIsReleased
                             });
 
-                            // Ghi đè lại giá trị chính xác vào Hash field của Redis
                             await db.HashSetAsync(hashKey, redisKey, correctedJson);
                             isAnyUpdated = true;
                         }
@@ -222,7 +247,6 @@ namespace ChatOps.Services.StartupService
 
                 if (isAnyUpdated)
                 {
-                    // Cập nhật lại tổng số lượng thực tế đếm được trong Hash sau khi fix
                     long currentRealCount = await db.HashLengthAsync(hashKey);
                     if (await db.HashExistsAsync(hashKey, "init:placeholder")) currentRealCount--;
                     await RedisAppService.UpdateAppCountValueAsync(exactCount: currentRealCount);
