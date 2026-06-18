@@ -695,8 +695,8 @@ namespace ChatOps.Services.RedisService
             }
 
             // Cấu hình định dạng domain đầu vào mới theo đúng thiết kế hệ thống
-            string frontendDomain = $"frontend:{AppContext.ServerDomain}".Trim().ToLower();
-            string backendDomain = $"backend:{AppContext.ServerDomain}".Trim().ToLower();
+            string frontendDomain = $"frontend:chatops.{AppContext.ServerDomain}".Trim().ToLower();
+            string backendDomain = $"backend:chatops.{AppContext.ServerDomain}".Trim().ToLower();
 
             string frontendValue = $"{localIp}:80";
             string backendValue = $"{localIp}:5000";
