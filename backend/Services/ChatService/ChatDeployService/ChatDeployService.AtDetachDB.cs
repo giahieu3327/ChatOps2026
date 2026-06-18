@@ -29,15 +29,7 @@ namespace ChatOps.Services.ChatService
             if (string.IsNullOrWhiteSpace(toolInput))
                 return "❌ Thiếu tham số bắt buộc! Vui lòng chỉ định tên Tool container bằng tham số 'tool'.";
 
-            if (!Regex.IsMatch(toolInput, "^[a-zA-Z0-9]+$"))
-                return "❌ Tên Tool container không hợp lệ. Chỉ được chứa chữ hoặc số.";
-
             var inputDbsCheck = dbInput.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim()).ToList();
-            foreach (var dbName in inputDbsCheck)
-            {
-                if (!Regex.IsMatch(dbName, "^[a-zA-Z0-9]+$"))
-                    return $"❌ Tên DB container '{dbName}' trong danh sách nhập vào không hợp lệ. Chỉ được chứa chữ hoặc số.";
-            }
 
             await SendLogWithDelayAsync(session.Debug, connectionId, $"🔍 [Node {AppContext.ServerID}] Kiểm tra định dạng hợp lệ. Đang truy vấn vị trí và thông tin cấu hình Tool '{toolInput}'...");
 
@@ -376,15 +368,7 @@ namespace ChatOps.Services.ChatService
             if (string.IsNullOrWhiteSpace(toolInput))
                 return "❌ Thiếu tham số bắt buộc! Vui lòng chỉ định tên Tool container bằng tham số 'tool'.";
 
-            if (!Regex.IsMatch(toolInput, "^[a-zA-Z0-9]+$"))
-                return "❌ Tên Tool container không hợp lệ. Chỉ được chứa chữ hoặc số.";
-
             var inputDbsCheck = dbInput.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim());
-            foreach (var dbName in inputDbsCheck)
-            {
-                if (!Regex.IsMatch(dbName, "^[a-zA-Z0-9]+$"))
-                    return $"❌ Tên DB container '{dbName}' trong danh sách yêu cầu gỡ không hợp lệ. Chỉ được chứa chữ hoặc số.";
-            }
 
             await SendLogWithDelayAsync(session.Debug, connectionId, $"🔍 [Node {AppContext.ServerID}] Kiểm tra định dạng hợp lệ. Đang truy vấn vị trí và thông tin cấu hình Tool '{toolInput}'...");
 

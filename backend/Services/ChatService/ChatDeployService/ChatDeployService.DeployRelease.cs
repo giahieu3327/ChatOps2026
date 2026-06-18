@@ -33,10 +33,8 @@ namespace ChatOps.Services.ChatService
                 return "❌ Thiếu tham số 'app' hoặc 'tag' bắt buộc.";
             }
 
-            if (!Regex.IsMatch(service, "^[a-zA-Z0-9]+$"))
-            {
-                return "❌ Tên ứng dụng không hợp lệ. Chỉ được phép chứa ký tự chữ hoặc số.";
-            }
+            if (!Regex.IsMatch(service, "^[a-zA-Z0-9_]+$"))
+                return "❌ Tên ứng dụng (app) không hợp lệ. Chỉ được chứa chữ cái (hoa/thường), số và dấu gạch dưới (_).";
 
             string cleanTag = tag.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? tag.Substring(1) : tag;
             if (!Version.TryParse(cleanTag, out Version? newVersion))
@@ -145,8 +143,8 @@ namespace ChatOps.Services.ChatService
             if (string.IsNullOrWhiteSpace(service))
                 return "❌ Vui lòng cung cấp tham số tên ứng dụng 'app'";
 
-            if (!Regex.IsMatch(service, "^[a-zA-Z0-9]+$"))
-                return "❌ Tên ứng dụng không hợp lệ. Chỉ được phép chứa ký tự chữ hoặc số.";
+            if (!Regex.IsMatch(service, "^[a-zA-Z0-9_]+$"))
+                return "❌ Tên ứng dụng (app) không hợp lệ. Chỉ được chứa chữ cái (hoa/thường), số và dấu gạch dưới (_).";
 
             (bool success, var targetServices, string errorMessage) = GetTargetServices(service);
             if (!success)
@@ -205,8 +203,8 @@ namespace ChatOps.Services.ChatService
             if (string.IsNullOrWhiteSpace(service) || string.IsNullOrWhiteSpace(tagToDelete))
                 return "❌ Thiếu tham số 'app' hoặc 'tag' bắt buộc.";
 
-            if (!Regex.IsMatch(service, "^[a-zA-Z0-9]+$"))
-                return "❌ Tên ứng dụng không hợp lệ. Chỉ được phép chứa ký tự chữ hoặc số.";
+            if (!Regex.IsMatch(service, "^[a-zA-Z0-9_]+$"))
+                return "❌ Tên ứng dụng (app) không hợp lệ. Chỉ được chứa chữ cái (hoa/thường), số và dấu gạch dưới (_).";
 
             (bool success, var targetServices, string errorMessage) = GetTargetServices(service);
             if (!success)
