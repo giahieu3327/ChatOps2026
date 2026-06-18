@@ -13,7 +13,7 @@ User=chatopsnode1
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
 Environment=ConnectionStrings__DefaultConnection="Host=192.168.1.29;Port=5432;Database=chatopsdb;Username=sa;Password=MyChatOpsPassword999983"
-Environment=CHATOPS_SERVER_DOMAIN=nt113q22nhom12.ddns.net
+Environment=CHATOPS_SERVER_DOMAIN=chatopsnet.cloud-ip.cc
 Environment=CHATOPS_SERVER_IP=192.168.1.29
 Environment=CHATOPS_SERVER_ID=1
 Environment=CHATOPS_NODE_TYPE=both
