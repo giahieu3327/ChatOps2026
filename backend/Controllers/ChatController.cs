@@ -122,16 +122,7 @@ namespace ChatOps.Controllers
                     }
 
                     string action = parsed.GetValueOrDefault("base_command", "").Trim().ToLower();
-
-                    if (action == "help")
-                    {
-                        string command = parsed.GetValueOrDefault("command", "").Trim().ToLower();
-                        var helpContent = ChatSupportService.GetHelp(command, session.Role);
-                        string enrichedHelp = $"✅ [Node {AppContext.ServerID}] Hướng dẫn sử dụng:\n{helpContent}";
-                        await RedisChannelService.SendMessageToClientAsync(session.Debug, connectionId, enrichedHelp);
-                        return;
-                    }
-
+                    
                     await RedisChannelService.SendMessageToClientAsync(session.Debug, connectionId, $"🔍 [Node {AppContext.ServerID}] Kiểm tra quyền hạn phân phối lệnh: {action}");
                     if (!await HasPermission(action, session.Role))
                     {
